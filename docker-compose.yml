@@ -1,0 +1,29 @@
+# Menggunakan Docker Compose versi 2 atau lebih.
+version: "3"
+
+# buat dua buah service: item-app dan item-db.
+services:
+  item-app:
+    # Menggunakan image item-app dari GitHub Container Registry
+    image: ghcr.io/theoyrus/item-app:v1
+    # port mapping agar dapat diakses dari port 80 di host.
+    ports:
+      - 80:8080
+    # restart policy agar container selalu restart ketika terhenti.
+    restart: always
+    # item-app hanya berjalan setelah item-db diluncurkan.
+    depends_on:
+      - item-db
+
+  item-db:
+    # Menggunakan image mongo:3 dari Docker Hub.
+    image: mongo:3
+    volumes:
+      # Memakai volume bernama app-db dengan target /data/db di container.
+      - app-db:/data/db
+    # restart policy agar container selalu restart ketika terhenti.
+    restart: always
+
+volumes:
+  # Sediakan sebuah volume bernama app-db.
+  app-db:

@@ -1,0 +1,5 @@
+Github Repository:
+https://github.com/theoyrus/a433-microservices/tree/proyek-pertama
+
+Github Container Registry:
+https://github.com/theoyrus/a433-microservices/pkgs/container/item-app

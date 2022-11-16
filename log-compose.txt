@@ -1,0 +1,13 @@
+[+] Running 8/8
+ ⠿ item-app Pulled           36.2s5s
+   ⠿ ca7dd9ec2225 Already exists  0.0s
+   ⠿ f6c774934c91 Already exists  0.0s
+   ⠿ c8d9211bf297 Already exists  0.0s
+   ⠿ 14523e6c1be2 Already exists  0.0s
+   ⠿ 912b2643d015 Pull complete  1.4ss==============================================>]      90B/90B 1.3s
+   ⠿ 31ce9503510e Pull complete  11.0s==========================================>]  2.438MB/2.438MB 10.9ss9s
+   ⠿ 6c5fe32b90cb Pull complete  28.5s==========================================>]   14.9MB/14.9MB 28.5ss
+[+] Running 3/3
+ ⠿ Network a433-microservices_default       Created 0.1s
+ ⠿ Container a433-microservices-item-db-1   Created 0.1s
+ ⠿ Container a433-microservices-item-app-1  Created 0.1ss
