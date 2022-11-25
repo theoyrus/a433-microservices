@@ -1,0 +1,89 @@
+version: 2.1
+
+# di circle ci, Jobs adalah kumpulan steps yang akan di-execute dalam single unit
+# baik dalam fresh container atau VM.
+jobs:
+  # lint-dockerfile : proses untuk menginstal hadolint dan menjalankannya terhadap berkas Dockerfile.
+  lint-dockerfile:
+    docker:
+      # menggunakan image docker dari dokumentasi menggunakan hadolint v2 varian alpine
+      - image: hadolint/hadolint:v2.12.0-alpine
+    steps:
+      - checkout
+      - run:
+          name: Lint Dockerfile
+          # jalankan hadolint untuk cek/linting berkas Dockerfile
+          command: |
+            hadolint Dockerfile
+
+  # test-app : perintah untuk menjalankan unit test untuk backend dengan perintah: go test -v -short --count=1 $(go list ./...)
+  test-app:
+    working_directory: ~/project
+    docker:
+      # menggunakan image docker dari source go.mod menggunakan golang 1.15, gunakan varian alpine utk size image minimal
+      - image: golang:1.15-alpine
+    steps:
+      - checkout
+      - run:
+          # pelu tambahkan package build-base untuk memenuhi kebutuhan build executable golang di alpine
+          # seperti package build-essential apabila di image debian/ubuntu based
+          command: |
+            apk add --no-cache build-base
+      - run:
+          # jalankan perintah go test untuk melakukan unit testing app golang ini
+          command: |
+            go test -v -short --count=1 $(go list ./...)
+
+  # build-app-karsajobs : perintah untuk build dan push image.
+  build-app-karsajobs:
+    machine:
+      # untuk build docker di circle ci, gunakan executor machine dan pilih image yang ada 
+      # yaitu ubuntu 20.04/22.04, kali ini kita gunakan ubuntu 22.04
+      image: ubuntu-2204:2022.10.2
+      # dari dokumentasi, jika di-set true, berguna untuk men-cache layer image docker agar bisa 
+      # mempercepat proses build dari layer yg sudah ada
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Build and push Docker image to GHCR
+          # jalankan shell script yang ada di repository branch yg kita tentukan
+          # simbol | sebagai tanda yaml agar bisa mengakomodir value multiline
+          # bisa kita definisikan perintah yang lain jika ada dengan pemisah enter/baris baru
+          command: |
+            sh build_push_image_karsajobs.sh
+
+# di circle ci, Workflows berguna untuk mengelola jobs yang ada, 
+# setiap workflow terhubung dengan key name dari jobs
+workflows:
+  # key berikut bebas kita namai apa saja
+  flow-ci-be:
+    jobs:
+      # key berikut kita samakan dengan nama job lint dockerfile
+      - lint-dockerfile:
+          filters:
+            # yaml map untuk mendefinisikan aturan eksekusi hanya pada branch tertentu
+            branches:
+              # hanya akan menjalankan jobs lint Dockerfile dari branch karsajobs
+              only:
+                - karsajobs
+      # key berikut kita samakan dengan nama job unit test
+      - test-app:
+          requires:
+            - lint-dockerfile
+          filters:
+            # yaml map untuk mendefinisikan aturan eksekusi hanya pada branch tertentu
+            branches:
+              # hanya akan menjalankan jobs unit test dari branch karsajobs
+              only:
+                - karsajobs
+      # key berikut kita samakan dengan nama job build docker image
+      - build-app-karsajobs:
+          requires:
+            - test-app
+          filters:
+            # yaml map untuk mendefinisikan aturan eksekusi hanya pada branch tertentu
+            branches:
+              # hanya akan menjalankan jobs build docker image dari branch karsajobs
+              only:
+                - karsajobs
