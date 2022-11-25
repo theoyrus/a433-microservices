@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+# jenis Kind Deployment
+kind: Deployment
+metadata:
+  # atur metadata name, namespace & labels
+  name: karsajobs
+  namespace: submisi
+  labels:
+    app: karsajobs
+    tier: backend
+spec:
+  selector:
+    matchLabels:
+      # atur selector Service
+      app: karsajobs
+  replicas: 1
+  template:
+    metadata:
+      # atur metadata labels
+      labels:
+        app: karsajobs
+        tier: backend
+    spec:
+      containers:
+      - name: karsajobs
+        # atur image dari Github registry yang sudah di-build
+        image: ghcr.io/theoyrus/karsajobs:latest
+        # opsional apabila tidak ingin pull ulang, jika sudah di-pull di minikube
+        # imagePullPolicy: Never
+        env:
+          # atur environment variabel koneksi ke mongo, dari secret & config map
+          - name: APP_PORT
+            value: "8080"
+          - name: MONGO_HOST
+            value: "mongo"
+          - name: MONGO_USER
+            valueFrom:
+              secretKeyRef:
+                key: MONGO_ROOT_USERNAME
+                name: mongo-secret
+          - name: MONGO_PASS
+            valueFrom:
+              secretKeyRef:
+                key: MONGO_ROOT_PASSWORD
+                name: mongo-secret
+        ports:
+        # expose port app backend ke 8080
+        - containerPort: 8080

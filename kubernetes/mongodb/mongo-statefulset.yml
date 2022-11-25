@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+# jenis Kind StatefulSet
+kind: StatefulSet
+metadata:
+  # atur metadata name, namespace & labels
+  name: mongo
+  namespace: submisi
+spec:
+  selector:
+    matchLabels:
+      # atur selector Service
+      app: mongo
+      tier: backend
+  serviceName: ""
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+        tier: backend
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mongo
+        # atur image dari Docker Hub, menggunakan versi 6
+        image: mongo:6.0.2
+        ports:
+        - containerPort: 27017
+          name: mongo 
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
+        - name: mongo-config-map
+          mountPath: /config
+        - name: mongo-secret
+          mountPath: /etc/mongo-credentials
+        env:
+          # atur environment variabel untuk credentials mongo
+          - name: MONGO_INITDB_ROOT_USERNAME_FILE
+            value: /etc/mongo-credentials/MONGO_ROOT_USERNAME
+          - name: MONGO_INITDB_ROOT_PASSWORD_FILE
+            value: /etc/mongo-credentials/MONGO_ROOT_PASSWORD
+      volumes:
+        - name: mongo-persistent-storage
+          # claim PV dengan menentukan identifier PVC dari yang telah dibuat
+          persistentVolumeClaim:
+            claimName: mongo-pv-claim
+        - name: mongo-config-map
+          # ambil config mongo dari ConfigMap yang telah dibuat
+          configMap:
+            name: mongo-config
+            items:
+              - key: mongo.conf
+                path: mongo.conf
+        - name: mongo-secret
+          # consume secret mongo dari Secret yang telah dibuat
+          secret:
+            secretName: mongo-secret

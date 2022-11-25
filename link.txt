@@ -1,0 +1,14 @@
+Github Repository:
+https://github.com/theoyrus/a433-microservices/
+
+Circle CI - Karsajobs:
+https://app.circleci.com/pipelines/github/theoyrus/a433-microservices?branch=karsajobs
+
+Github Container Registry - Karsajobs:
+https://github.com/theoyrus/a433-microservices/pkgs/container/karsajobs
+
+Circle CI - Karsajobs UI:
+https://app.circleci.com/pipelines/github/theoyrus/a433-microservices?branch=karsajobs-ui
+
+Github Container Registry - Karsajobs UI:
+https://github.com/theoyrus/a433-microservices/pkgs/container/karsajobs-ui

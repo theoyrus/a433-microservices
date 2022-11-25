@@ -1,0 +1,13 @@
+apiVersion: v1
+# jenis Kind ConfigMap menyimpan data non privat/secret
+kind: ConfigMap
+metadata:
+  # atur nama/identifier ConfigMap
+  name: mongo-config
+  namespace: submisi
+data:
+  # isi dari ConfigMap
+  # memperlakukan data sebagai file mongo.conf yang memiliki properti storage dengan key dbPath dan nilai /data/db
+  mongo.conf: |
+    storage:
+      dbPath: /data/db
