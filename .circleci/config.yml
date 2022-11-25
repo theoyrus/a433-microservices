@@ -1,0 +1,64 @@
+version: 2.1
+
+# di circle ci, Jobs adalah kumpulan steps yang akan di-execute dalam single unit
+# baik dalam fresh container atau VM.
+jobs:
+  # lint-dockerfile : proses untuk menginstal hadolint dan menjalankannya terhadap berkas Dockerfile.
+  lint-dockerfile:
+    docker:
+      # menggunakan image docker dari dokumentasi menggunakan hadolint v2 varian alpine
+      - image: hadolint/hadolint:v2.12.0-alpine
+    steps:
+      - checkout
+      - run:
+          name: Lint Dockerfile
+          # jalankan hadolint untuk cek/linting berkas Dockerfile
+          command: |
+            hadolint Dockerfile
+
+  # build-app-karsajobs-ui : perintah untuk build dan push image.
+  build-app-karsajobs-ui:
+    machine:
+      # untuk build docker di circle ci, gunakan executor machine dan pilih image yang ada 
+      # yaitu ubuntu 20.04/22.04, kali ini kita gunakan ubuntu 22.04
+      image: ubuntu-2204:2022.10.2
+      # dari dokumentasi, jika di-set true, berguna untuk men-cache layer image docker agar bisa 
+      # mempercepat proses build dari layer yg sudah ada
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Build and push Docker image to GHCR
+          # jalankan shell script yang ada di repository branch yg kita tentukan
+          # simbol | sebagai tanda yaml agar bisa mengakomodir value multiline
+          # bisa kita definisikan perintah yang lain jika ada dengan pemisah enter/baris baru
+          command: |
+            sh build_push_image_karsajobs_ui.sh
+
+# di circle ci, Workflows berguna untuk mengelola jobs yang ada, 
+# setiap workflow terhubung dengan key name dari jobs
+workflows:
+  # key berikut bebas kita namai apa saja
+  flow-ci-fe:
+    jobs:
+      # key berikut kita samakan dengan nama job lint dockerfile
+      - lint-dockerfile:
+          filters:
+            # yaml map untuk mendefinisikan aturan eksekusi hanya pada branch tertentu
+            branches:
+              # hanya akan menjalankan jobs lint Dockerfile dari branch karsajobs-ui
+              only:
+                - karsajobs-ui
+      # key berikut kita samakan dengan nama job build docker image
+      - build-app-karsajobs-ui:
+          # CircleCI Jobs defaultnya di-eksekusi secara parallel, karena kita ingin 
+          # hanya menjalankan job build image ketika lint Dockerfile selesai/valid, 
+          # maka kita tentukan eksekusi hanya ketika job lint-dockerfile selesai/valid
+          requires:
+            - lint-dockerfile
+          filters:
+            # yaml map untuk mendefinisikan aturan eksekusi hanya pada branch tertentu
+            branches:
+              # hanya akan menjalankan jobs build docker image dari branch karsajobs-ui
+              only:
+                - karsajobs-ui
